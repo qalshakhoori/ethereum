@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "deploy": "node -r dotenv/config deploy.js"
   },
   "keywords": [],
   "author": "",
