@@ -50,4 +50,67 @@ describe('Campaigns', () => {
     const isContributer = await campaign.methods.approvers(accounts[1]).call();
     assert(isContributer);
   });
+
+  it('requires a minimum contribution', async () => {
+    try {
+      await campaign.methods.contribute().send({
+        value: '5',
+        from: accounts[1],
+      });
+      assert(false);
+    } catch (error) {
+      assert(error);
+    }
+  });
+
+  it('allows a manager to make a payment request', async () => {
+    await campaign.methods
+      .createRequest('Buy something', '100', accounts[9])
+      .send({
+        from: accounts[0],
+        gas: '1000000',
+      });
+
+    const request = await campaign.methods.requests(0).call();
+    assert.strictEqual(request.description, 'Buy something');
+    assert.strict(request.recipient, accounts[9]);
+  });
+
+  it('processes requests', async () => {
+    let initialBalance = await _web3.eth.getBalance(accounts[1]);
+    initialBalance = _web3.utils.fromWei(initialBalance, 'ether');
+    initialBalance = parseFloat(initialBalance);
+
+    await campaign.methods.contribute().send({
+      from: accounts[0],
+      value: _web3.utils.toWei('10', 'ether'),
+    });
+
+    await campaign.methods
+      .createRequest(
+        'A description',
+        _web3.utils.toWei('5', 'ether'),
+        accounts[1]
+      )
+      .send({ from: accounts[0], gas: '1000000' });
+
+    await campaign.methods.approveRequest(0).send({
+      from: accounts[0],
+      gas: '1000000',
+    });
+
+    await campaign.methods.finalizeRequest(0).send({
+      from: accounts[0],
+      gas: '1000000',
+    });
+
+    let balance = await _web3.eth.getBalance(accounts[1]);
+    balance = _web3.utils.fromWei(balance, 'ether');
+    balance = parseFloat(balance);
+
+    const diffrence = balance - initialBalance;
+    assert(diffrence > 4 && diffrence <= 5);
+    // account might have less amount of ether at this point but not that much,
+    // also it should not have more that what was sent to it starting of this test
+  });
 });
