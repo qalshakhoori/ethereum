@@ -3,7 +3,6 @@ import { Card, Button } from 'semantic-ui-react';
 import factory from '../ethereum/factory';
 import Layout from '../components/Layout';
 
-import 'semantic-ui-css/semantic.min.css';
 class CampaignIndex extends Component {
   static async getInitialProps() {
     const campaigns = await factory.methods.getDeployedCampaigns().call();
@@ -28,8 +27,13 @@ class CampaignIndex extends Component {
       <Layout>
         <div>
           <h3>Open Campaigns</h3>
+          <Button
+            floated='right'
+            content='Create Campaign'
+            icon='add'
+            primary
+          />
           {this.renderCampaigns()}
-          <Button content='Create Campaign' icon='add' primary />
         </div>
       </Layout>
     );
